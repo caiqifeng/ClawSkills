@@ -168,13 +168,18 @@ python scripts/cli.py tasks --build-name "TDR" --start-time "2026-02-01" --end-t
 
 ### 稳定性测试页面数据提取
 
+页面列结构：
+1. 设备名称 | 2. 是否在线 | 3. 机型 | 4. IP | 5. 平台 | 6. 状态 | 7. 耗时 | 8. 开始时间 | 9. 完成时间 | 10. 报告链接 | **11. 性能概况 (FPS TP90 / 内存峰值 / Jank)**
+
 ```javascript
-// 获取完整设备列表
+// 获取完整设备列表（性能列格式："- 9924.8 -" 表示 FPS=空 / 内存=9924.8MB / Jank=空）
 const rows = document.querySelectorAll('table tbody tr');
 const devices = [];
 rows.forEach(r => {
   const cells = r.querySelectorAll('td');
-  if (cells.length > 8) {
+  if (cells.length > 10) {
+    const perfText = cells[10]?.innerText?.trim() || '';
+    const perfParts = perfText.split(/\s+/);
     devices.push({
       name: cells[0]?.innerText?.trim(),
       online: cells[1]?.innerText?.trim(),
@@ -184,7 +189,9 @@ rows.forEach(r => {
       duration: cells[6]?.innerText?.trim(),
       startTime: cells[7]?.innerText?.trim(),
       endTime: cells[8]?.innerText?.trim(),
-      perf: cells[10]?.innerText?.trim()
+      fps: perfParts[0] === '-' ? null : perfParts[0],       // FPS TP90（可能为空）
+      mem: perfParts[1] === '-' ? null : perfParts[1],       // 内存峰值(MB)
+      jank: perfParts[2] === '-' ? null : perfParts[2]       // Jank(次/10min)（可能为空）
     });
   }
 });
@@ -204,12 +211,21 @@ rows.forEach(r => {
 ### 稳定性测试关键指标
 
 1. **执行时长**: 成功设备应达到约6小时
-2. **FPS TP90**: PC 平台正常范围 8000-12000
-3. **通过率基准**: ≥80% 为达标
-4. **失败模式分析**:
+2. **内存峰值**: PC 平台正常范围 6000-12000 MB
+3. **FPS TP90 / Jank**: ⚠️ **可能为空**，仅当任务配置采集时才显示
+4. **通过率基准**: ≥80% 为达标
+5. **失败模式分析**:
    - 极早期失败（<30分钟）：启动/崩溃问题
    - 早期失败（1-2小时）：低配兼容性问题
    - 中途失败（3-5小时）：内存/稳定性问题
+
+### 报告列显示规则
+
+| 指标 | 显示条件 |
+|------|---------|
+| FPS TP90 | 有数据时显示，为 `-` 时显示 `N/A` |
+| 内存峰值(MB) | **始终显示**（必填项） |
+| Jank(次/10min) | 有数据时显示，为 `-` 时显示 `N/A` |
 
 ---
 
