@@ -1,0 +1,8 @@
+Usage: cli.py tasks [OPTIONS]
+Try 'cli.py tasks --help' for help.
+
+Usage: cli.py tasks [OPTIONS]
+Try 'cli.py tasks --help' for help.
+
+Error: No such option: --verbose
+Error: No such option: --verbose

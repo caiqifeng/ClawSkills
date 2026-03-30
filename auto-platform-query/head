@@ -1,0 +1,8 @@
+Usage: cli.py pipeline [OPTIONS]
+Try 'cli.py pipeline --help' for help.
+
+Usage: cli.py pipeline [OPTIONS]
+Try 'cli.py pipeline --help' for help.
+
+Error: No such option: -5
+Error: No such option: -5
