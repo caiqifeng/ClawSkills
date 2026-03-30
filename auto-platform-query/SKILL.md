@@ -120,7 +120,57 @@ python scripts/cli.py tasks --build-name "TDR" --start-time "2026-02-01" --end-t
 
 ## 输出格式
 
-所有 CLI 输出均为 **JSON 格式**（专为 AI Agent 分析设计）：
+### 稳定性测试完整分析报告格式（标准格式）
+
+当用户要求输出稳定性测试任务的完整分析报告时，使用以下格式：
+
+**报告头部和章节标题均使用 `##` 二级标题加粗（飞书渲染为大2号加粗字体）**
+
+```
+## **任务 #{任务ID} 完整分析报告**
+## **任务：{项目名} · {任务名}**
+## **日期：{YYYY-MM-DD}**
+## **所需机器数：{N}**
+
+一、设备状态统计
+| 状态 | 数量 | 占比 |
+|------|------|------|
+| ✅ 成功 | N | X% |
+| ❌ 失败（在线） | N | X% |
+| 🔴 失败（离线） | N | X% |
+| 合计 | N | 100% |
+
+二、✅ 成功设备（N台）
+| 序号 | 设备名称 | 在线 | IP | 耗时 | 内存峰值(MB) |
+|------|---------|------|-----|------|------------|
+| 1 | ... | 在线/离线 | x.x.x.x | Xh Xm Xs | XXXXX.X |
+
+三、❌ 失败设备（在线，N台）
+| 序号 | 设备名称 | IP | 耗时 | 内存峰值(MB) | 失败类型 |
+|------|---------|-----|------|------------|---------|
+| 1 | ... | x.x.x.x | Xh Xm Xs | XXXXX.X | 运行失败/Crash/未启动 |
+
+四、🔴 失败设备（离线，N台）
+| 序号 | 设备名称 | IP |
+|------|---------|-----|
+| 1 | ... | x.x.x.x |
+
+五、历史任务对比（近一周）
+| 日期 | 任务ID | 通过率 | 达标 | 趋势 |
+|------|--------|--------|------|------|
+| MM/DD | #XXXXXX | XX% | ✅/❌ | ↑/↓/— |
+
+六、结论
+结论：#{任务ID} 通过率 XX%，达标/未达标。[简要说明主要失败原因]
+```
+
+**失败类型判断规则**：
+- 耗时为 `-`（未启动）→ `未启动`
+- 耗时 < 30分钟 → `启动失败/Crash`
+- 耗时 1-5小时 → `运行失败`
+- 有 Crasheye 链接 → `Crash`
+
+### CLI JSON 输出格式（供 AI Agent 解析）
 
 ```json
 {
@@ -137,10 +187,23 @@ python scripts/cli.py tasks --build-name "TDR" --start-time "2026-02-01" --end-t
     "device_stats": {
       "total_devices": 9,
       "success_devices": 6,
-      "failed_devices": 9
+      "failed_online_devices": 3,
+      "failed_offline_devices": 6,
+      "pass_rate": "66.7%",
+      "pass_rate_qualified": false
     }
   },
-  "cases": [...]
+  "devices": [
+    {
+      "name": "设备名称",
+      "online": "在线/离线",
+      "status": "成功/失败",
+      "category": "success/failed_online/failed_offline",
+      "ip": "x.x.x.x",
+      "duration": "Xh Xm Xs",
+      "mem": "XXXXX.X"
+    }
+  ]
 }
 ```
 
