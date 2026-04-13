@@ -124,16 +124,17 @@ def get_task_msg(taskIdDict:dict,Regulation_hours:int):
                                     for report,url in reportData.items():
                                         if "perfeye" in report:
                                             perfeye_url= f"https://perfeye.testplus.cn/case/{url}/report?appKey={projectId}"
+                                        # 只保留以下两种异常判断条件
                                         if "Crasheye" in report:
                                             if device not in Abnormal_Info:
                                                 Abnormal_Info[device] = {}
                                             Abnormal_Info[device]["Crasheye"]=url
                                             device_error_type.append("宕机")
-                                        if "卡死" in report:
+                                        if "闪退" in report:
                                             if device not in Abnormal_Info:
                                                 Abnormal_Info[device] = {}
-                                            Abnormal_Info[device]["Dump文件"]=url
-                                            device_error_type.append("卡死")
+                                            Abnormal_Info[device]["Crasheye"]=url
+                                            device_error_type.append("闪退")
                                         if "GpuDump" in report:
                                             if device not in Abnormal_Info:
                                                 Abnormal_Info[device] = {}
@@ -150,13 +151,20 @@ def get_task_msg(taskIdDict:dict,Regulation_hours:int):
 
                                         deviceId = deviceInfo["deviceId"]
                                         checkpoint_error = get_checkpoint_error(taskID,buildCaseId,deviceId,projectId)
-                                        for error_type in device_error_type:
-                                            print(checkpoint_error)
-                                            print(error_type)
-                                            checkpoint_error += error_type
-                                            if error_type != device_error_type[-1]:
-                                                checkpoint_error += "+"
-                                        Abnormal_Info[device]["checkpoint_error"] = checkpoint_error
+                                        # 只保留Crasheye和GpuDump异常，不添加其他检查点错误
+                                        # 只有当checkpoint_error包含相关关键字时才记录
+                                        if "crasheye" in checkpoint_error.lower() or "gpu" in checkpoint_error.lower():
+                                            for error_type in device_error_type:
+                                                print(checkpoint_error)
+                                                print(error_type)
+                                                checkpoint_error += error_type
+                                                if error_type != device_error_type[-1]:
+                                                    checkpoint_error += "+"
+                                            Abnormal_Info[device]["checkpoint_error"] = checkpoint_error
+                                        else:
+                                            # 如果没有checkpoint错误，只记录异常类型
+                                            error_str = "+".join(device_error_type)
+                                            Abnormal_Info[device]["checkpoint_error"] = f"出现{error_str}"
                                         Abnormal_Info[device]["时长"]=formatted_time
                         version_msg += f"共**{machineCount}台**设备，其中**{run_enough_device}台**设备执行超过**{Regulation_hours}小时**，"
                         versionMachineCount += machineCount
@@ -221,19 +229,21 @@ def generate_template_output(taskInfo, Regulation_hours, date_str):
                                     if duration_seconds >= Regulation_hours * 3600:
                                         run_enough_device += 1
                                     formatted_time = f"{int(duration_seconds // 3600)}小时{int((duration_seconds % 3600) // 60)}分{int(duration_seconds % 60)}秒"
-                                    if duration_seconds < Regulation_hours * 3600:
-                                        Abnormal_Info[device] = {"时长": formatted_time}
+                                    # 移除时长不足的异常检测
+                                    # 只检测Crasheye、闪退和GpuDump异常
                                 except:
                                     pass
                                 machineCount += 1
                             
-                            # Check for errors
-                            deviceId = deviceInfo.get("deviceId", "")
-                            checkpoint_error = get_checkpoint_error(buildId, buildCaseId, deviceId, projectId)
-                            if "crasheye" in checkpoint_error.lower() or "perfeye" in checkpoint_error.lower():
-                                if device not in Abnormal_Info:
-                                    Abnormal_Info[device] = {}
-                                Abnormal_Info[device]["checkpoint_error"] = checkpoint_error
+                            # Check for errors - 只检查Crasheye、闪退和GpuDump
+                            if "reportData" in deviceInfo and deviceInfo["reportData"]:
+                                reportData = deviceInfo["reportData"]
+                                for report, url in reportData.items():
+                                    if "Crasheye" in report or "闪退" in report or "GpuDump" in report:
+                                        if device not in Abnormal_Info:
+                                            Abnormal_Info[device] = {}
+                                        Abnormal_Info[device]["异常类型"] = "宕机" if "Crasheye" in report else "闪退" if "闪退" in report else "GPU宕机"
+                                        break
                 
                 abnormal_num = len(Abnormal_Info)
                 if abnormal_num > 0:
