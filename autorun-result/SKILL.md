@@ -16,23 +16,29 @@ description: |
   4. 异常设备检测（崩溃、提前退出）
   5. 生成可直接复制到在线文档的Markdown格式
 
-  触发词：星砂 今日稳定性执行详情
+  触发词：星砂 今日稳定性执行详情, 星砂 稳定性执行情况, 剑世4 稳定性执行情况
 
 allowed-tools: Bash, Read, Write, Exec
 ---
 
 ## 聊天触发与自动化执行
 
-当用户在聊天中输入以下短语之一时，执行对应脚本并以模板 `start_result_model_v2.md` 生成输出文档：
+当用户在聊天中输入以下短语之一时，执行对应脚本并以指定模板生成输出文档：
 
-- 触发短语（完全匹配）：`星砂 今日稳定性执行详情`
+### 触发短语 1：星砂 今日稳定性执行详情
+- 匹配短语：`星砂 今日稳定性执行详情`
+- 执行脚本：`python scripts/WPS_StabilitySummary.py --template start_result_model_v2.md --output start_result_model_v2_output.md`
+- 使用模板：`start_result_model_v2.md`
 
-默认执行命令（工作区根目录下运行）：
+### 触发短语 2：星砂 稳定性执行情况
+- 匹配短语：`星砂 稳定性执行情况`
+- 执行脚本：`python scripts/WPS_StabilitySummary.py --template references/START_TEMPLATE.md --output start_template_output.md`
+- 使用模板：`references/START_TEMPLATE.md`
 
-```bash
-# 以今日为日期生成并使用模板输出到文件
-python scripts/WPS_StabilitySummary.py --template start_result_model_v2.md --output start_result_model_v2_output.md
-```
+### 触发短语 3：剑世4 稳定性执行情况
+- 匹配短语：`剑世4 稳定性执行情况`
+- 执行脚本：`python scripts/WPS_StabilitySummaryJXSJ4.py --template references/JXSJ4_TEMPLATE.md --output jxsj4_template_output.md`
+- 使用模板：`references/JXSJ4_TEMPLATE.md`
 
 说明：
 - 请确保 Python 环境已配置并安装脚本依赖。
@@ -40,14 +46,22 @@ python scripts/WPS_StabilitySummary.py --template start_result_model_v2.md --out
 
 实现建议给 AI Agent 的发现点：
 - 在 `description` 中包含触发词（已添加），以便 agent 能检索到该技能。
-- 为确保确定性，agent 在检测到完全匹配短语时应调用上面的命令并返回生成的 `start_result_model_v2_output.md` 内容给用户。
+- 为确保确定性，agent 在检测到完全匹配短语时应调用对应的命令并返回生成的输出文件内容给用户。
 
 ## Agent 工作流程
 
-当检测到触发短语 `星砂 今日稳定性执行详情` 时，执行以下步骤：
+当检测到触发短语时，根据以下映射执行相应脚本：
 
-1. **运行脚本**：在工作区根目录执行 `python scripts/WPS_StabilitySummary.py --template start_result_model_v2.md --output start_result_model_v2_output.md`
-2. **读取输出**：读取生成的 `start_result_model_v2_output.md` 文件内容
+| 触发短语 | 执行命令 | 输出文件 |
+|----------|----------|----------|
+| `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary.py --template start_result_model_v2.md --output start_result_model_v2_output.md` | `start_result_model_v2_output.md` |
+| `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary.py --template references/START_TEMPLATE.md --output start_template_output.md` | `start_template_output.md` |
+| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py --template references/JXSJ4_TEMPLATE.md --output jxsj4_template_output.md` | `jxsj4_template_output.md` |
+
+执行步骤：
+
+1. **运行脚本**：在工作区根目录执行对应命令
+2. **读取输出**：读取生成的输出文件内容
 3. **返回结果**：将文件内容作为响应返回给用户
 
 如果脚本执行失败或文件未生成，返回错误信息并建议检查 Python 环境和依赖。
