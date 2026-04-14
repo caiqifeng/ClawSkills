@@ -27,11 +27,11 @@ allowed-tools: Bash, Read, Write, Exec
 
 | 触发短语 | 执行脚本 | 使用模板 | 输出文件 |
 |----------|----------|----------|----------|
-| `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary.py` | `references/START_TEMPLATE.md` | `start_result_model_v2_output.md` |
-| `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary.py` | `references/START_TEMPLATE.md` | `start_template_output.md` |
-| `剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
-| `输出 剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
-| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
+| `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary.py` | `assets/START_TEMPLATE.md` | `start_result_model_v2_output.md` |
+| `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary.py` | `assets/START_TEMPLATE.md` | `start_template_output.md` |
+| `剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `assets/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
+| `输出 剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `assets/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
+| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `assets/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
 
 说明：
 - 请确保 Python 环境已配置并安装脚本依赖。
@@ -40,6 +40,11 @@ allowed-tools: Bash, Read, Write, Exec
 实现建议给 AI Agent 的发现点：
 - 在 `description` 中包含触发词（已添加），以便 agent 能检索到该技能。
 - 为确保确定性，agent 在检测到完全匹配短语时应调用对应的命令并返回生成的输出文件内容给用户。
+
+## 报告模板
+注意：报告必须手动输出，不可用脚本生成
+
+- 生成报告前，必须先 read assets对应的报告模板，并且要按对应项目模板，再按它输出；
 
 ## Agent 工作流程
 
