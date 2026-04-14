@@ -16,7 +16,7 @@ description: |
   4. 异常设备检测（崩溃、提前退出）
   5. 生成可直接复制到在线文档的Markdown格式
 
-  触发词：星砂 今日稳定性执行详情, 星砂 稳定性执行情况, 剑世4 今日稳定性执行情况, 剑世4 稳定性执行情况，星砂 2026.04.14稳定性执行情况, 剑世4 2026.04.14稳定性执行情况
+  触发词：星砂 今日稳定性执行详情, 星砂 稳定性执行情况, 剑世4 今日稳定性执行情况, 剑世4 稳定性执行情况, 输出 剑世4 今日稳定性执行情况, 星砂 2026.04.14稳定性执行情况, 剑世4 2026.04.14稳定性执行情况
 
 allowed-tools: Bash, Read, Write, Exec
 ---
@@ -29,8 +29,9 @@ allowed-tools: Bash, Read, Write, Exec
 |----------|----------|----------|----------|
 | `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary.py` | `references/START_TEMPLATE.md` | `start_result_model_v2_output.md` |
 | `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary.py` | `references/START_TEMPLATE.md` | `start_template_output.md` |
-| `剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_template_output.md` |
-| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_template_output.md` |
+| `剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
+| `输出 剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
+| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummaryJXSJ4.py` | `references/JXSJ4_TEMPLATE.md` | `jxsj4_report_final.md` |
 
 说明：
 - 请确保 Python 环境已配置并安装脚本依赖。
