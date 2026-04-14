@@ -1,30 +1,37 @@
-# 《剑侠世界4》稳定性日报模板
+# {YYYY.MM.DD}《剑侠世界4》稳定性汇总
 
-## 输出格式
+## 一、PC（共**{N}台**设备，其中**{M}台**执行超过4小时）
+{for each version in pc_versions}
+- （版本：v{version_number}）
+{for each task in version.tasks}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
+{if task_has_abnormal}
+    - {device}执行了{time}，在{checkpoint_error} [Crasheye]({url}) | [系统日志]({url}) | [游戏日志]({url})
+{end}
+{end}
+{end}
 
-```
-{YYYY.MM.DD}《剑侠世界4》稳定性汇总
+## 二、android（共**{N}台**设备，其中**{M}台**执行超过4小时）
+{for each version in android_versions}
+- （版本：v{version_number}）
+{for each task in version.tasks}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
+{if task_has_abnormal}
+    - {device}（{ip}）执行了{time}，在{checkpoint_error} [Crasheye]({url}) | [系统日志]({url}) | [游戏日志]({url}) | [Perfeye]({url})
+{end}
+{end}
+{end}
 
-** 一、{平台名}**共**{N}台**设备，其中**{M}台**执行超过4小时。
-- （版本：v{版本号}）
-  - {序号}.[{任务名称}]({任务URL}) 任务执行汇总：共**{N}台**设备，其中**{M}台**设备执行超过4小时，{异常判断}
-- （版本：v{版本号}）
-  - {序号}.[{任务名称}]({任务URL}) 任务执行汇总：共**{N}台**设备，其中**{M}台**设备执行超过4小时，以下**{X}台**出现卡死和宕机
-    - {设备名}（{IP}）执行了{时长}，在{checkpoint_error} [Crasheye]({链接}) | [系统日志]({链接}) | [游戏日志]({链接})
-
-** 二、{平台名}**共**{N}台**设备，其中**{M}台**执行超过4小时。
-- （版本：v{版本号}）
-  - {序号}.[{任务名称}]({任务URL}) 任务执行汇总：共**{N}台**设备，其中**{M}台**设备执行超过4小时，{异常判断}
-    - {设备名}@{IP}执行了{时长}，{卡死原因} [系统日志]({系统日志链接}) | [游戏日志]({游戏日志链接}) | [Perfeye]({Perfeye链接})
-  - {序号}.[{任务名称}]({任务URL}) 任务执行汇总：共**{N}台**设备，其中**{M}台**设备执行超过4小时，{异常判断}
-
-** 三、{平台名}**共**{N}台**设备，其中**{M}台**执行超过4小时。
-- （版本：v{版本号}）
-  - {序号}.[{任务名称}]({任务URL}) 任务执行汇总：共**{N}台**设备，其中**{M}台**设备执行超过4小时，{异常判断}
-    - {设备名}@{IP}执行了{时长}，{卡死原因} [系统日志]({系统日志链接}) | [游戏日志]({游戏日志链接}) | [Perfeye]({Perfeye链接})
-    - {设备名}@{IP}执行了{时长}，{卡死原因} [系统日志]({系统日志链接}) | [游戏日志]({游戏日志链接})
-    - {设备名}@{IP}执行了{时长}，{卡死原因} [Crasheye]({Crasheye链接}) | [系统日志]({系统日志链接}) | [Perfeye]({Perfeye链接})
-```
+## 三、ios（共**{N}台**设备，其中**{M}台**执行超过4小时）
+{for each version in ios_versions}
+- （版本：v{version_number}）
+{for each task in version.tasks}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
+{if task_has_abnormal}
+    - {device}（{ip}）执行了{time}，在{checkpoint_error} [Crasheye]({url}) | [系统日志]({url}) | [游戏日志]({url}) | [Perfeye]({url})
+{end}
+{end}
+{end}
 
 ## 格式要点
 
