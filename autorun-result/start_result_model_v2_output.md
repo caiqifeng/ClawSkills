@@ -1,27 +1,27 @@
-# 2026.04.13《星砂岛物语》稳定性汇总
+# 2026.04.14《星砂岛物语》稳定性汇总
 
-## PC（共18台设备，其中13台执行超过4小时）
-- （版本：1.0.0.8505.197671）
-  - 1.[日常稳定性 release（PC）（分支）-#146](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141695) 任务执行汇总：**共18台** 设备，其中 **13台** 设备执行超过4小时，以下5台出现异常
+## PC（共17台设备，其中14台执行超过4小时）
+- （版本：1.0.0.8546.197836）
+  - 1.[日常稳定性 release（PC）（分支）-#147](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141931) 任务执行汇总：**共17台** 设备，其中 **14台** 设备执行超过4小时，未发现异常
 
-## Xbox（共5台设备，其中1台执行超过4小时）
-- （版本：1.0.0.8500.197651）
-  - 1.[分支-日常稳定性 release（XBox）-#105](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141699) 任务执行汇总：**共5台** 设备，其中 **1台** 设备执行超过4小时，以下4台出现异常
+## Xbox（共5台设备，其中0台执行超过4小时）
+- （版本：1.0.0.8541.197811）
+  - 1.[分支-日常稳定性 release（XBox）-#106](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141937) 任务执行汇总：**共5台** 设备，其中 **0台** 设备执行超过4小时，未发现异常
 
-## PS5（共0台设备，其中0台执行超过4小时）
-- （版本：1.0.0.8501.197651）
-  - 1.[分支-日常稳定性（PS5）-#99](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141700) 任务执行汇总：**共0台** 设备，其中 **0台** 设备执行超过4小时，未发现异常
+## PS5（共2台设备，其中1台执行超过4小时）
+- （版本：1.0.0.8542.197811）
+  - 1.[分支-日常稳定性（PS5）-#100](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141938) 任务执行汇总：**共2台** 设备，其中 **1台** 设备执行超过4小时，未发现异常
 
-## Switch（共3台设备，其中2台执行超过4小时）
-- （版本：1.0.0.8499.197651）
-  - 1.[分支-日常稳定性 release（NS2）-#36](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141697) 任务执行汇总：**共3台** 设备，其中 **2台** 设备执行超过4小时，以下1台出现异常
+## Switch（共3台设备，其中0台执行超过4小时）
+- （版本：1.0.0.8540.197811）
+  - 1.[分支-日常稳定性 release（NS2）-#37](https://uauto2.testplus.cn/project/starsandisland/taskDetail?taskId=141939) 任务执行汇总：**共3台** 设备，其中 **0台** 设备执行超过4小时，未发现异常
 
 ---
 
 **📊 总体统计**：
 - **平台覆盖**：4/4（全部平台有测试）
-- **总设备数**：26台
-- **执行超过4小时设备**：16台
+- **总设备数**：27台
+- **执行超过4小时设备**：15台
 - **异常设备**：0台
 
 **📈 今日亮点**：
