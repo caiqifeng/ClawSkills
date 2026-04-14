@@ -1,34 +1,34 @@
 # {YYYY.MM.DD}《星砂岛物语》稳定性汇总
 
-## 一、PC（共{N}台设备，其中{M}台执行超过4小时）
+## 一、PC（共**{N}台**设备，其中**{M}台**执行超过4小时）
 {for each version in pc_versions}
 - （版本：v{version_number}）
 {for each task in version.tasks}
-  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：**共{task_device_count}台** 设备，其中 **{task_over_4h_count}台** 设备执行超过4小时，{abnormal_info}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
 {end}
 {end}
 
-## 二、Xbox（共{N}台设备，其中{M}台执行超过4小时）
+## 二、Xbox（共**{N}台**设备，其中**{M}台**执行超过4小时）
 {for each version in xbox_versions}
 - （版本：v{version_number}）
 {for each task in version.tasks}
-  - {task_index}.[{task_name}]({task_url}) 任务执行汇总： **共{task_device_count}台** 设备，其中 **{task_over_4h_count}台** 设备执行超过4小时，{abnormal_info}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
 {end}
 {end}
 
-## 三、PS5（共{N}台设备，其中{M}台执行超过4小时）
+## 三、PS5（共**{N}台**设备，其中**{M}台**执行超过4小时）
 {for each version in ps5_versions}
 - （版本：v{version_number}）
 {for each task in version.tasks}
-  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：**共{task_device_count}台** 设备，其中 **{task_over_4h_count}台** 设备执行超过4小时，{abnormal_info}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
 {end}
 {end}
 
-## 四、NS2（共{N}台设备，其中{M}台执行超过4小时）
+## 四、NS2（共**{N}台**设备，其中**{M}台**执行超过4小时）
 {for each version in ns2_versions}
 - （版本：v{version_number}）
 {for each task in version.tasks}
-  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：**共{task_device_count}台** 设备，其中 **{task_over_4h_count}台** 设备执行超过4小时，{abnormal_info}
+  - {task_index}.[{task_name}]({task_url}) 任务执行汇总：共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时，{abnormal_info}
 {end}
 {end}
 
