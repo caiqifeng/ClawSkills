@@ -1,8 +1,8 @@
 ---
 name: autorun-result
 description: |
-  读取项目每日稳定性测试结果,按天汇总多平台的运行情况。
-  按平台、版本、任务进行层级统计,输出格式化的Markdown报告,便于更新到在线文档。
+  读取项目每日稳定性测试结果，按天汇总多平台的运行情况。
+  按平台、版本、任务进行层级统计，输出格式化的 Markdown 报告，便于更新到在线文档。
 
   使用场景:
   - 每日自动化测试结果汇总
@@ -10,70 +10,75 @@ description: |
   - 在线文档每日更新
 
   核心功能:
-  1. 按日期统计(默认当天)
+  1. 按日期统计 (默认当天)
   2. 按平台和版本分组
-  3. 设备执行时长统计(>4小时)
-  4. 异常设备检测(崩溃、提前退出)
-  5. 生成可直接复制到在线文档的Markdown格式
+  3. 设备执行时长统计 (>4 小时)
+  4. 异常设备检测 (崩溃、提前退出)
+  5. 生成可直接复制到在线文档的 Markdown 格式
 
-  触发词:星砂 今日稳定性执行详情, 星砂 稳定性执行情况, 剑世4 今日稳定性执行情况, 剑世4 稳定性执行情况, 输出 剑世4 今日稳定性执行情况, 星砂 2026.04.14稳定性执行情况, 剑世4 2026.04.14稳定性执行情况
+  触发词：星砂 今日稳定性执行详情，星砂 稳定性执行情况，剑世 4 今日稳定性执行情况，剑世 4 稳定性执行情况，输出 剑世 4 今日稳定性执行情况，星砂 2026.04.14 稳定性执行情况，剑世 4 2026.04.14 稳定性执行情况
 
 allowed-tools: Bash, Read, Write, Exec
 ---
 
 ## 项目配置
 
-### 剑侠世界4
-- **项目ID**: `jxsj4`
-- **流水线ID**: `263,983,466,917,649`
+### 剑侠世界 4
+- **项目 ID**: `jxsj4`
+- **流水线 ID**: `263,983,466,917,649`
 - **平台顺序**: PC → android → ios
 
 ### 星砂岛物语
-- **项目ID**: `start`
-- **流水线ID**: `898,946,953,954,1056`
+- **项目 ID**: `start`
+- **流水线 ID**: `898,946,953,954,1056`
 - **平台顺序**: PC → Xbox → PS5 → NS2
 
 ## 聊天触发与自动化执行
 
-当用户在聊天中输入以下短语之一时,执行统一脚本并生成对应项目的报告:
+当用户在聊天中输入以下短语之一时，执行统一脚本并生成对应项目的报告:
 
 | 触发短语 | 执行命令 | 输出文件 |
 |----------|----------|----------|
 | `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary_Unified.py --project start --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
 | `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project start --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
-| `剑世4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
-| `剑世4 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
+| `剑世 4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
+| `剑世 4 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
 
 ### 命令参数说明
-- `--project`: 项目ID (jxsj4 或 start)
-- `--pipelines`: 流水线ID列表，用逗号分隔
+- `--project`: 项目 ID (jxsj4 或 start)
+- `--pipelines`: 流水线 ID 列表，用逗号分隔
 - `--output`: 输出文件名
 - `--date`: (可选) 指定日期，格式 YYYY-MM-DD，默认为当天
 
 说明:
 - 请确保 Python 环境已配置并安装脚本依赖。
-- 如果需要不同日期,可在命令中加入 `--date YYYY-MM-DD`。
+- 如果需要不同日期，可在命令中加入 `--date YYYY-MM-DD`。
 
 实现建议给 AI Agent 的发现点:
-- 在 `description` 中包含触发词(已添加),以便 agent 能检索到该技能。
-- 为确保确定性,agent 在检测到完全匹配短语时应调用对应的命令并返回生成的输出文件内容给用户。
+- 在 `description` 中包含触发词 (已添加),以便 agent 能检索到该技能。
+- 为确保确定性，agent 在检测到完全匹配短语时应调用对应的命令并返回生成的输出文件内容给用户。
 
 ## 报告模板
 注意：报告必须手动输出，不可用脚本生成
 
+### ⚠️ 重要规则（2026.04.15 更新）
+- **禁止使用代码块输出报告**：报告内容必须直接以 Markdown 格式输出，不能使用 ``` 代码块包裹
+- **原因**：代码块会禁用超链接点击，导致用户无法直接访问日志链接
+- **正确做法**：直接输出格式化 Markdown 内容，保留所有超链接的可点击性
+
 - 生成报告前，必须先 read `assets/UNIFIED_TEMPLATE.md` 统一报告模板，并且要按对应项目模板，再按它输出；
-- **统一格式要求（2026.04.15更新）**：
-  - 平台标题加粗：`**一、PC共{M}台设备，其中{N}台执行超过4小时。**`
-  - 设备数加粗：`共**N**台设备`、`其中**M**台执行超过4小时`
-  - 任务行数字加粗：`共**N**台设备，其中**M**台设备执行超过4小时`
+- **统一格式要求（2026.04.15 更新）**：
+  - 平台标题加粗：`**一、PC 共{M}台设备，其中{N}台执行超过 4 小时。**`
+  - 设备数加粗：`共**N**台设备`、`其中**M**台执行超过 4 小时`
+  - 任务行数字加粗：`共**N**台设备，其中**M**台设备执行超过 4 小时`
   - 异常数加粗：`发现**X**台异常`
-  - 必须包含链接：PC平台包含 `[Crasheye](链接) | [系统日志](链接) | [游戏日志](链接)`
+  - 必须包含链接：PC 平台包含 `[Crasheye](链接) | [系统日志](链接) | [游戏日志](链接)`
   - 必须包含链接：移动平台包含 `[系统日志](链接) | [游戏日志](链接) | [Perfeye](链接)`
   - 严格按照 `assets/UNIFIED_TEMPLATE.md` 中的最新模板格式执行，不能使用 代码块 格式输出，需要保留报告中的超链接
 
 ## Agent 工作流程
 
-当检测到触发短语时,根据上方触发短语映射表执行对应的统一脚本:
+当检测到触发短语时，根据上方触发短语映射表执行对应的统一脚本:
 
 执行步骤:
 
@@ -81,6 +86,4 @@ allowed-tools: Bash, Read, Write, Exec
 2. **读取输出**:读取生成的输出文件内容
 3. **返回结果**:将文件内容作为响应返回给用户
 
-如果脚本执行失败或文件未生成,返回错误信息并建议检查 Python 环境和依赖。
-
-
+如果脚本执行失败或文件未生成，返回错误信息并建议检查 Python 环境和依赖。
