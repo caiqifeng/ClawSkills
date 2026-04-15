@@ -100,23 +100,6 @@ def batch_find_case_ex(perfeye_ids: List[str], max_workers: int = 10) -> Dict[st
     return results
 
 
-def get_checkpoint_error(taskID, buildCaseId, deviceId, projectId):
-    res = requests.get(
-        f"https://automation-api.testplus.cn/api/tasks/device/execute/info?taskId={taskID}&buildCaseId={buildCaseId}&deviceId={deviceId}&projectId={projectId}"
-    ).json()["data"][0]["executeData"]
-    for item in res[::-1]:
-        if "执行失败" in item["msg"] and "事件" in item["msg"] and "稳定性" not in item["msg"]:
-            msg = item["msg"].split("@@")[0].replace("事件：", "")
-            if "执行失败" in msg:
-                msg = msg.replace("执行失败", "出现")
-            return msg
-        elif "stack" in item and item["stack"] and "游戏启动失败或设备掉线" in item["stack"]:
-            return "游戏启动流程出现"
-        elif "stack" in item and item["stack"] and "游戏初始化流程出现宕机" in item["stack"]:
-            return "游戏初始化流程出现"
-    return ""
-
-
 def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
     msg = ""
     index = 0
@@ -183,29 +166,15 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                             version_run_enough_device += 1
 
                         is_abnormal = False
-                        abnormal_reason = ""
 
                         if crasheye_link:
                             is_abnormal = True
-                            abnormal_reason = "Crasheye"
-
-                        checkpoint_error = ""
-                        if not is_abnormal and deviceId:
-                            checkpoint_error = get_checkpoint_error(buildId, buildCaseId, deviceId, projectId)
-                            if checkpoint_error:
-                                is_abnormal = True
-                                abnormal_reason = checkpoint_error
 
                         if is_abnormal:
                             device_info = f"    - {deviceName}"
                             if deviceIp:
                                 device_info += f"({deviceIp})"
                             device_info += f"执行了{duration_str}"
-
-                            if checkpoint_error:
-                                device_info += f"，在{checkpoint_error}"
-                            elif abnormal_reason:
-                                device_info += f"，在{abnormal_reason}"
 
                             link_parts = []
                             if crasheye_link:
