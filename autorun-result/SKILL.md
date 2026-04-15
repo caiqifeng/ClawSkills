@@ -29,7 +29,7 @@ allowed-tools: Bash, Read, Write, Exec
 - **平台顺序**: PC → android → ios
 
 ### 星砂岛物语
-- **项目 ID**: `start`
+- **项目 ID**: `starsandisland`
 - **流水线 ID**: `898,946,953,954,1056`
 - **平台顺序**: PC → Xbox → PS5 → NS2
 
@@ -39,13 +39,13 @@ allowed-tools: Bash, Read, Write, Exec
 
 | 触发短语 | 执行命令 | 输出文件 |
 |----------|----------|----------|
-| `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary_Unified.py --project start --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
-| `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project start --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
+| `星砂 今日稳定性执行详情` | `python scripts/WPS_StabilitySummary_Unified.py --project starsandisland --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
+| `星砂 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project starsandisland --pipelines "898,946,953,954,1056" --output start_stability_report.md` | `start_stability_report.md` |
 | `剑世 4 今日稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
 | `剑世 4 稳定性执行情况` | `python scripts/WPS_StabilitySummary_Unified.py --project jxsj4 --pipelines "263,983,466,917,649" --output jxsj4_stability_report.md` | `jxsj4_stability_report.md` |
 
 ### 命令参数说明
-- `--project`: 项目 ID (jxsj4 或 start)
+- `--project`: 项目 ID (jxsj4 或 starsandisland)
 - `--pipelines`: 流水线 ID 列表，用逗号分隔
 - `--output`: 输出文件名
 - `--date`: (可选) 指定日期，格式 YYYY-MM-DD，默认为当天
