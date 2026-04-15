@@ -49,7 +49,7 @@ allowed-tools: Bash, Read, Write, Exec
   - 设备数加粗：`共**N**台设备`、`其中**M**台执行超过4小时`
   - 任务行数字加粗：`共**N**台设备，其中**M**台设备执行超过4小时`
   - 异常数加粗：`发现**X**台异常`
-  - 严格按照 `assets/JXSJ4_TEMPLATE.md` 中的最新模板格式执行
+  - 严格按照 `assets/JXSJ4_TEMPLATE.md` 中的最新模板格式执行，不能使用 代码块 格式输出，需要保留报告中的超链接
 
 - **星砂岛格式要求（2026.04.14更新）**：
   - 平台标题格式：`## 一、PC（共**{N}台**设备，其中**{M}台**执行超过4小时）`
@@ -57,7 +57,7 @@ allowed-tools: Bash, Read, Write, Exec
   - 任务行数字加粗：`共**{task_device_count}台**设备，其中**{task_over_4h_count}台**设备执行超过4小时`
   - 异常信息：`{abnormal_info}`（未发现异常 或 以下{X}台出现异常）
   - 平台顺序固定：PC → Xbox → PS5 → NS2
-  - 严格按照 `assets/START_TEMPLATE.md` 中的最新模板格式执行
+  - 严格按照 `assets/START_TEMPLATE.md` 中的最新模板格式执行，不能使用 代码块 格式输出，需要保留报告中的超链接
 
 ## Agent 工作流程
 
