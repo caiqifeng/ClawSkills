@@ -15,7 +15,6 @@ def custom_sort_key(item):
 
 
 def get_taskIdList(pipelineIdList: list, startTimeAfter: str, endTime: str, projectId: str):
-    # 通过流水线ID与指定时间动态获取任务ID数组
     taskIdList = []
     for pipelineId in pipelineIdList:
         res_json = {
@@ -41,7 +40,6 @@ def get_taskIdList(pipelineIdList: list, startTimeAfter: str, endTime: str, proj
 
 
 def get_taskInfo_by_taskId(taskIdList: list, startTimeAfter, projectId: str):
-    # 通过任务ID与指定时间动态获取任务ID数组
     taskIdDict = {}
     for taskId in taskIdList:
         taskdata = requests.get(
@@ -52,7 +50,7 @@ def get_taskInfo_by_taskId(taskIdList: list, startTimeAfter, projectId: str):
         dt_startTimeAfter = datetime.strptime(startTimeAfter, "%Y-%m-%d %H:%M:%S")
         if dt_createTime < dt_startTimeAfter:
             print(
-                f"任务ID: {taskId} 创建时间: {createTime} 在指定时间{startTimeAfter}之前，跳过"
+                f"任务 ID: {taskId} 创建时间：{createTime} 在指定时间{startTimeAfter}之前，跳过"
             )
             continue
 
@@ -74,7 +72,6 @@ def get_taskInfo_by_taskId(taskIdList: list, startTimeAfter, projectId: str):
 
 
 def find_case_ex_by_id(perfeyeID: str) -> List[str]:
-    """单个 perfeyeID 的处理逻辑"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36 Edg/103.0.1264.44",
         "Authorization": "Bearer mj6cltF&!L#yWX8k",
@@ -89,15 +86,14 @@ def find_case_ex_by_id(perfeyeID: str) -> List[str]:
             case_ex_list = case_data.get("case_ex", [])
             return case_ex_list
         else:
-            print(f"perfeyeID {perfeyeID} 返回数据异常: {data}")
+            print(f"perfeyeID {perfeyeID} 返回数据异常：{data}")
             return []
     except requests.exceptions.RequestException as e:
-        print(f"请求 perfeyeID {perfeyeID} 时出错: {e}")
+        print(f"请求 perfeyeID {perfeyeID} 时出错：{e}")
         return []
 
 
 def batch_find_case_ex(perfeye_ids: List[str], max_workers: int = 10) -> Dict[str, List[str]]:
-    """批量并发查询 perfeyeID 的 case_ex"""
     results = {}
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_id = {executor.submit(find_case_ex_by_id, pid): pid for pid in perfeye_ids}
@@ -107,7 +103,7 @@ def batch_find_case_ex(perfeye_ids: List[str], max_workers: int = 10) -> Dict[st
                 case_ex_list = future.result()
                 results[perfeye_id] = case_ex_list
             except Exception as e:
-                print(f"处理 perfeyeID {perfeye_id} 时发生异常: {e}")
+                print(f"处理 perfeyeID {perfeye_id} 时发生异常：{e}")
                 results[perfeye_id] = []
     return results
 
@@ -156,86 +152,85 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                 abnormal_device_list = []
 
                 for caseDetail in caseDetails:
-                    deviceId = caseDetail["deviceId"]
-                    deviceName = caseDetail["deviceName"]
-                    deviceIp = caseDetail.get("deviceIp", "")
                     buildCaseId = caseDetail["buildCaseId"]
-                    duration = caseDetail["duration"]
+                    duration = caseDetail.get("duration", 0)
                     hours = duration // 3600
                     minutes = (duration % 3600) // 60
                     seconds = duration % 60
                     duration_str = f"{hours}小时{minutes}分{seconds}秒"
 
-                    machineCount += 1
-                    versionMachineCount += 1
-
-                    if duration >= Regulation_hours * 3600:
-                        run_enough_device += 1
-                        version_run_enough_device += 1
-
-                    # 检测异常
-                    is_abnormal = False
-                    abnormal_reason = ""
-                    links = []
-
-                    # Crasheye链接
                     crasheye_link = ""
                     if "crasheyeId" in caseDetail and caseDetail["crasheyeId"]:
                         crasheye_id = caseDetail["crasheyeId"]
                         crasheye_link = f"https://crasheye.woa.com/crasheye/crash/{crasheye_id}"
-                        is_abnormal = True
-                        abnormal_reason = "Crasheye"
 
-                    # 系统日志链接
                     system_log_link = ""
                     if "systemLogUrl" in caseDetail and caseDetail["systemLogUrl"]:
                         system_log_link = caseDetail["systemLogUrl"]
 
-                    # 游戏日志链接
                     game_log_link = ""
                     if "gameLogUrl" in caseDetail and caseDetail["gameLogUrl"]:
                         game_log_link = caseDetail["gameLogUrl"]
 
-                    # Perfeye链接
                     perfeye_link = ""
                     if "perfeyeId" in caseDetail and caseDetail["perfeyeId"]:
                         perfeye_id = caseDetail["perfeyeId"]
                         perfeye_link = f"https://perfeye.woa.com/case/{perfeye_id}"
 
-                    # 检测checkpoint错误
-                    checkpoint_error = ""
-                    if not is_abnormal:
-                        checkpoint_error = get_checkpoint_error(buildId, buildCaseId, deviceId, projectId)
-                        if checkpoint_error:
-                            is_abnormal = True
-                            abnormal_reason = checkpoint_error
+                    deviceDetailList = caseDetail.get("deviceDetail", [])
+                    for deviceDetail in deviceDetailList:
+                        deviceId = deviceDetail.get("deviceId", "")
+                        deviceName = deviceDetail.get("deviceName", "")
+                        deviceIp = deviceDetail.get("ip", "")
 
-                    if is_abnormal:
-                        device_info = f"    - {deviceName}"
-                        if deviceIp:
-                            device_info += f"@{deviceIp}"
-                        device_info += f"执行了{duration_str}"
+                        machineCount += 1
+                        versionMachineCount += 1
 
-                        if checkpoint_error:
-                            device_info += f"，在{checkpoint_error}"
+                        if duration >= Regulation_hours * 3600:
+                            run_enough_device += 1
+                            version_run_enough_device += 1
 
-                        # 添加链接
-                        link_parts = []
+                        is_abnormal = False
+                        abnormal_reason = ""
+
                         if crasheye_link:
-                            link_parts.append(f"[Crasheye]({crasheye_link})")
-                        if system_log_link:
-                            link_parts.append(f"[系统日志]({system_log_link})")
-                        if game_log_link:
-                            link_parts.append(f"[游戏日志]({game_log_link})")
-                        if perfeye_link:
-                            link_parts.append(f"[Perfeye]({perfeye_link})")
+                            is_abnormal = True
+                            abnormal_reason = "Crasheye"
 
-                        if link_parts:
-                            device_info += " " + " | ".join(link_parts)
+                        checkpoint_error = ""
+                        if not is_abnormal and deviceId:
+                            checkpoint_error = get_checkpoint_error(buildId, buildCaseId, deviceId, projectId)
+                            if checkpoint_error:
+                                is_abnormal = True
+                                abnormal_reason = checkpoint_error
 
-                        abnormal_device_list.append(device_info)
+                        if is_abnormal:
+                            device_info = f"    - {deviceName}"
+                            if deviceIp:
+                                device_info += f"({deviceIp})"
+                            device_info += f"执行了{duration_str}"
 
-                task_msg += f"共**{machineCount}台**设备，其中**{run_enough_device}台**设备执行超过4小时，"
+                            if checkpoint_error:
+                                device_info += f"，在{checkpoint_error}"
+                            elif abnormal_reason:
+                                device_info += f"，在{abnormal_reason}"
+
+                            link_parts = []
+                            if crasheye_link:
+                                link_parts.append(f"[Crasheye]({crasheye_link})")
+                            if system_log_link:
+                                link_parts.append(f"[系统日志]({system_log_link})")
+                            if game_log_link:
+                                link_parts.append(f"[游戏日志]({game_log_link})")
+                            if perfeye_link:
+                                link_parts.append(f"[Perfeye]({perfeye_link})")
+
+                            if link_parts:
+                                device_info += " " + " | ".join(link_parts)
+
+                            abnormal_device_list.append(device_info)
+
+                task_msg += f"共**{machineCount}台**设备，其中**{run_enough_device}台**设备执行超过 4 小时，"
                 if abnormal_device_list:
                     task_msg += f"发现**{len(abnormal_device_list)}台**异常\n"
                     task_msg += "\n".join(abnormal_device_list)
@@ -244,7 +239,7 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
                 version_msg += task_msg + "\n"
 
-        msg += f"共**{versionMachineCount}台**设备，其中**{version_run_enough_device}台**执行超过4小时。"
+        msg += f"共**{versionMachineCount}台**设备，其中**{version_run_enough_device}台**执行超过 4 小时。"
         msg += version_msg
 
     return msg
@@ -252,8 +247,8 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="稳定性测试汇总脚本")
-    parser.add_argument("--project", type=str, required=True, help="项目ID (jxsj4 或 start)")
-    parser.add_argument("--pipelines", type=str, required=True, help="流水线ID列表，逗号分隔")
+    parser.add_argument("--project", type=str, required=True, help="项目 ID (jxsj4 或 start)")
+    parser.add_argument("--pipelines", type=str, required=True, help="流水线 ID 列表，逗号分隔")
     parser.add_argument("--date", type=str, default="", help="统计日期 YYYY-MM-DD")
     parser.add_argument("--output", type=str, default="Stability_Summary.md", help="输出文件名")
 
@@ -263,17 +258,17 @@ if __name__ == "__main__":
     pipelineIdList = [int(x.strip()) for x in args.pipelines.split(",")]
     Regulation_hours = 4
 
-    startTimeAfter = args.date if args.date else ""
-    if not startTimeAfter:
-        start_of_day = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        startTimeAfter = start_of_day.strftime("%Y-%m-%d %H:%M:%S")
-
-    if ":" not in startTimeAfter:
-        startTimeAfter = startTimeAfter + " 00:00:00"
-
-    endTime = ""
-    if not endTime:
-        endTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    target_date = args.date if args.date else ""
+    if not target_date:
+        today = datetime.now()
+        target_date = today.strftime("%Y-%m-%d")
+    
+    if ":" not in target_date:
+        target_date = target_date + " 00:00:00"
+    
+    startTimeAfter = target_date
+    end_of_day = target_date.split(" ")[0] + " 23:59:59"
+    endTime = end_of_day
 
     taskIdList = get_taskIdList(pipelineIdList, startTimeAfter, endTime, projectId)
 
@@ -289,7 +284,7 @@ if __name__ == "__main__":
 
     msg = get_task_msg(taskInfo, Regulation_hours, projectId)
 
-    project_name = "《剑侠世界4》" if projectId == "jxsj4" else "《星砂岛物语》"
+    project_name = "《剑侠世界 4》" if projectId == "jxsj4" else "《星砂岛物语》"
     Title = f"#### **{startTimeAfter.split(' ')[0].replace('-', '.')}{project_name}稳定性汇总**\n"
     All_Summary = Title + msg
 
@@ -297,4 +292,4 @@ if __name__ == "__main__":
     with open(filename, "w", encoding="utf-8") as file:
         file.write(All_Summary)
 
-    print(f"报告已生成: {filename}")
+    print(f"报告已生成：{filename}")
