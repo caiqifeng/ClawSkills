@@ -128,35 +128,52 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
                 for caseDetail in caseDetails:
                     buildCaseId = caseDetail["buildCaseId"]
-                    duration = caseDetail.get("duration", 0)
-                    hours = duration // 3600
-                    minutes = (duration % 3600) // 60
-                    seconds = duration % 60
-                    duration_str = f"{hours}小时{minutes}分{seconds}秒"
-
-                    crasheye_link = ""
-                    if "crasheyeId" in caseDetail and caseDetail["crasheyeId"]:
-                        crasheye_id = caseDetail["crasheyeId"]
-                        crasheye_link = f"https://crasheye.woa.com/crasheye/crash/{crasheye_id}"
-
-                    system_log_link = ""
-                    if "systemLogUrl" in caseDetail and caseDetail["systemLogUrl"]:
-                        system_log_link = caseDetail["systemLogUrl"]
-
-                    game_log_link = ""
-                    if "gameLogUrl" in caseDetail and caseDetail["gameLogUrl"]:
-                        game_log_link = caseDetail["gameLogUrl"]
-
-                    perfeye_link = ""
-                    if "perfeyeId" in caseDetail and caseDetail["perfeyeId"]:
-                        perfeye_id = caseDetail["perfeyeId"]
-                        perfeye_link = f"https://perfeye.woa.com/case/{perfeye_id}"
 
                     deviceDetailList = caseDetail.get("deviceDetail", [])
                     for deviceDetail in deviceDetailList:
                         deviceId = deviceDetail.get("deviceId", "")
                         deviceName = deviceDetail.get("deviceName", "")
                         deviceIp = deviceDetail.get("ip", "")
+
+                        # 计算每个设备的执行时长
+                        startTime = deviceDetail.get("startTime", "")
+                        endTime = deviceDetail.get("endTime", "")
+                        duration = 0
+                        if startTime and endTime:
+                            try:
+                                dt_start = datetime.strptime(startTime, "%Y-%m-%dT%H:%M:%S")
+                                dt_end = datetime.strptime(endTime, "%Y-%m-%dT%H:%M:%S")
+                                duration = int((dt_end - dt_start).total_seconds())
+                            except:
+                                duration = 0
+
+                        hours = duration // 3600
+                        minutes = (duration % 3600) // 60
+                        seconds = duration % 60
+                        duration_str = f"{hours}小时{minutes}分{seconds}秒"
+
+                        # 获取链接信息
+                        reportData = deviceDetail.get("reportData", {})
+
+                        crasheye_link = ""
+                        if "Crasheye" in reportData:
+                            crasheye_link = reportData["Crasheye"]
+                        elif "crasheyeId" in reportData:
+                            crasheye_link = f"https://crasheye.woa.com/crasheye/crash/{reportData['crasheyeId']}"
+
+                        system_log_link = ""
+                        game_log_link = ""
+                        logUrls = deviceDetail.get("logUrl", [])
+                        for log_url in logUrls:
+                            if "system-log" in log_url or "xgsdk" in log_url:
+                                system_log_link = log_url
+                            elif "Player.log" in log_url or "game-log" in log_url or "PlayerLog" in log_url:
+                                game_log_link = log_url
+
+                        perfeye_link = ""
+                        if "perfeye" in reportData:
+                            perfeye_id = reportData["perfeye"]
+                            perfeye_link = f"https://perfeye.testplus.cn/case/{perfeye_id}/report"
 
                         machineCount += 1
                         versionMachineCount += 1
