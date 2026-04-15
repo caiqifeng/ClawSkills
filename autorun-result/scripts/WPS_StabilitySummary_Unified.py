@@ -39,20 +39,12 @@ def get_taskIdList(pipelineIdList: list, startTimeAfter: str, endTime: str, proj
     return taskIdList
 
 
-def get_taskInfo_by_taskId(taskIdList: list, startTimeAfter, projectId: str):
+def get_taskInfo_by_taskId(taskIdList: list, projectId: str):
     taskIdDict = {}
     for taskId in taskIdList:
         taskdata = requests.get(
             f"https://automation-api.testplus.cn/api/tasks/detail/{taskId}?projectId={projectId}"
         ).json()["data"]
-        createTime = taskdata["createTime"].replace("T", " ")
-        dt_createTime = datetime.strptime(createTime, "%Y-%m-%d %H:%M:%S")
-        dt_startTimeAfter = datetime.strptime(startTimeAfter, "%Y-%m-%d %H:%M:%S")
-        if dt_createTime < dt_startTimeAfter:
-            print(
-                f"任务 ID: {taskId} 创建时间：{createTime} 在指定时间{startTimeAfter}之前，跳过"
-            )
-            continue
 
         packageVersion = taskdata["packageVersion"]
         model_data = json.loads(taskdata["model"])
@@ -278,7 +270,7 @@ if __name__ == "__main__":
     delete_taskIdList = []
     taskIdList = [task for task in taskIdList if task not in delete_taskIdList]
 
-    taskInfo = get_taskInfo_by_taskId(taskIdList, startTimeAfter, projectId)
+    taskInfo = get_taskInfo_by_taskId(taskIdList, projectId)
     taskInfo = dict(sorted(taskInfo.items(), key=custom_sort_key))
     print(taskInfo)
 
