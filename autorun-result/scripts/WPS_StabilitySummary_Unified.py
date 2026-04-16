@@ -160,6 +160,12 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                             crasheye_link = reportData["Crasheye"]
                         elif "crasheyeId" in reportData:
                             crasheye_link = f"https://crasheye.woa.com/crasheye/crash/{reportData['crasheyeId']}"
+                        elif "crasheyeDumpKeys" in reportData and len(reportData["crasheyeDumpKeys"]) > 0:
+                            # jxsj4项目使用crasheyeDumpKeys格式，构建搜索链接
+                            first_key = reportData["crasheyeDumpKeys"][0]
+                            appkey = reportData.get("appkey", "uusp2yf6")
+                            today_str = target_date.split(" ")[0].replace("-", "-")
+                            crasheye_link = f"https://crasheye2.testplus.cn/project/{projectId}/vk/{appkey}/error?startTime={today_str}&endTime={today_str}&searchs={first_key}"
 
                         system_log_link = ""
                         game_log_link = ""
@@ -187,6 +193,14 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                         if crasheye_link:
                             is_abnormal = True
 
+                        # 检查是否包含"疑似闪退"关键词，满足也判定为异常
+                        # 检查case名称
+                        if "疑似闪退" in caseDetail.get("caseName", ""):
+                            is_abnormal = True
+                        # 检查设备名称
+                        if "疑似闪退" in deviceName:
+                            is_abnormal = True
+
                         if is_abnormal:
                             device_info = f"    - {deviceName}"
                             if deviceIp:
@@ -208,7 +222,7 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
                             abnormal_device_list.append(device_info)
 
-                task_msg += f"共**{machineCount}台**设备，其中**{run_enough_device}台**设备执行超过 4 小时，"
+                task_msg += f"共**{machineCount}台**设备，其中**{run_enough_device}台**设备执行超过4小时，"
                 if abnormal_device_list:
                     task_msg += f"发现**{len(abnormal_device_list)}台**异常\n"
                     task_msg += "\n".join(abnormal_device_list)
@@ -217,7 +231,7 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
                 version_msg += task_msg + "\n"
 
-        msg += f"共**{versionMachineCount}台**设备，其中**{version_run_enough_device}台**执行超过 4 小时。"
+        msg += f"共**{versionMachineCount}台**设备，其中**{version_run_enough_device}台**执行超过4小时。"
         msg += version_msg
 
     return msg
@@ -262,8 +276,8 @@ if __name__ == "__main__":
 
     msg = get_task_msg(taskInfo, Regulation_hours, projectId)
 
-    project_name = "《剑侠世界 4》" if projectId == "jxsj4" else "《星砂岛物语》"
-    Title = f"#### **{startTimeAfter.split(' ')[0].replace('-', '.')}{project_name}稳定性汇总**\n"
+    project_name = "《剑侠世界4》" if projectId == "jxsj4" else "《星砂岛物语》"
+    Title = f"# {startTimeAfter.split(' ')[0].replace('-', '.')}{project_name}稳定性汇总\n\n"
     All_Summary = Title + msg
 
     filename = args.output
