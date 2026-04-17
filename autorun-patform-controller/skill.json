@@ -1,0 +1,162 @@
+{
+  "name": "autorun-patform-controller",
+  "display_name": "自动化平台操作助手",
+  "description": "连接内部自动化平台，实现任务监控、失败设备重试、快速触发测试流水线",
+  "version": "1.0.0",
+  "author": "",
+  "license": "MIT",
+  "tools": [
+    {
+      "name": "get_task_info",
+      "description": "获取任务信息和设备状态列表",
+      "parameters": [
+        {
+          "name": "task_input",
+          "type": "string",
+          "description": "任务 URL 或任务 ID",
+          "required": true
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "项目 ID",
+          "required": true
+        },
+        {
+          "name": "user_uid",
+          "type": "string",
+          "description": "用户 ID (K-USER-UID)",
+          "required": true
+        },
+        {
+          "name": "base_url",
+          "type": "string",
+          "description": "平台基础 URL",
+          "required": false,
+          "default": "https://uauto2.testplus.cn"
+        }
+      ]
+    },
+    {
+      "name": "manage_device_retry",
+      "description": "对失败设备执行重试操作 (POST /api/build/retry)",
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "任务 ID",
+          "required": true
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "项目 ID",
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "用户 ID",
+          "required": true
+        },
+        {
+          "name": "build_id",
+          "type": "integer",
+          "description": "构建 ID",
+          "required": true
+        },
+        {
+          "name": "device_ids",
+          "type": "array",
+          "description": "需要重试的设备 ID 列表，留空则重试所有失败设备",
+          "required": false
+        },
+        {
+          "name": "retry_type",
+          "type": "string",
+          "description": "重试类型: SINGLE_ALL | SINGLE | FAILED | ALL",
+          "required": false,
+          "default": "FAILED"
+        },
+        {
+          "name": "base_url",
+          "type": "string",
+          "description": "平台基础 URL",
+          "required": false,
+          "default": "https://uauto2.testplus.cn"
+        }
+      ]
+    },
+    {
+      "name": "trigger_pipeline",
+      "description": "执行流水线 (POST /api/build/execute)",
+      "parameters": [
+        {
+          "name": "pipeline_id",
+          "type": "integer",
+          "description": "流水线 ID",
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "用户 ID",
+          "required": true
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "项目 ID",
+          "required": true
+        },
+        {
+          "name": "params",
+          "type": "object",
+          "description": "构建参数 (ModelParams)",
+          "required": false
+        },
+        {
+          "name": "base_url",
+          "type": "string",
+          "description": "平台基础 URL",
+          "required": false,
+          "default": "https://uauto2.testplus.cn"
+        }
+      ]
+    },
+    {
+      "name": "search_pipeline_by_name",
+      "description": "根据名称搜索流水线",
+      "parameters": [
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "项目 ID",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "流水线名称关键词",
+          "required": true
+        },
+        {
+          "name": "user_uid",
+          "type": "string",
+          "description": "用户 ID",
+          "required": true
+        },
+        {
+          "name": "base_url",
+          "type": "string",
+          "description": "平台基础 URL",
+          "required": false,
+          "default": "https://uauto2.testplus.cn"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "requests>=2.25.0"
+  ]
+}
