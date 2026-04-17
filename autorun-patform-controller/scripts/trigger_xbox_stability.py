@@ -12,8 +12,8 @@ import sys
 import json
 from datetime import datetime
 from typing import Dict, List, Optional
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+sys.path.insert(0, os.path.dirname(__file__))
 from __init__ import AutoPlatformClient
 from dotenv import load_dotenv
 

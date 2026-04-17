@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 # 添加当前目录到路径
 sys.path.insert(0, os.path.dirname(__file__))
-
 from __init__ import get_task_info, manage_device_retry
 
 # 加载环境变量

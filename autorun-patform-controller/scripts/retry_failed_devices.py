@@ -7,9 +7,8 @@ import os
 import sys
 from dotenv import load_dotenv
 
-# 添加当前目录到路径
+# 添加当前目录到路径，直接导入
 sys.path.insert(0, os.path.dirname(__file__))
-
 from __init__ import get_task_info, AutoPlatformClient
 
 # 加载环境变量

@@ -393,8 +393,8 @@ def manage_device_retry(task_id: Union[str, int], project_id: str, user_id: str,
         failed_devices_info = [d for d in task_info["failed_devices"] if d["device_id"] in device_ids]
 
         for device_info in failed_devices_info:
-            build_case_id = device_info["case_id"]
-            build_device_id = device_info["device_id"]
+            build_case_id = device_info["build_case_id"]
+            build_device_id = device_info["build_device_id"]
 
             try:
                 result = client.retry_device_case(
