@@ -1,3 +1,11 @@
+---
+name: autorun-patform-controller
+version: 1.0.0
+description: 本 Skill 用于连接内部自动化平台（API 地址：https://uauto2.testplus.cn），实现任务监控、故障设备重试、以及根据项目名称快速拉起测试流水线的功能。
+
+allowed-tools: Bash, Read, Write, Exec
+---
+
 # Skill: 自动化平台操作助手 (Automation Platform Controller)
 
 ## Description
