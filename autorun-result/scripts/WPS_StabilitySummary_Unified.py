@@ -68,7 +68,7 @@ def find_case_ex_by_id(perfeyeID: str) -> List[str]:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36 Edg/103.0.1264.44",
         "Authorization": "Bearer mj6cltF&!L#yWX8k",
     }
-    url = f"https://perfeye.woa.com/api/v1/case/{perfeyeID}"
+    url = f"https://perfeye.testplus.cn/api/v1/case/{perfeyeID}"
     try:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
@@ -159,7 +159,7 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                         if "Crasheye" in reportData:
                             crasheye_link = reportData["Crasheye"]
                         elif "crasheyeId" in reportData:
-                            crasheye_link = f"https://crasheye.woa.com/crasheye/crash/{reportData['crasheyeId']}"
+                            crasheye_link = f"https://crasheye2.testplus.cn/crasheye/crash/{reportData['crasheyeId']}"
                         elif "crasheyeDumpKeys" in reportData and len(reportData["crasheyeDumpKeys"]) > 0:
                             # jxsj4项目使用crasheyeDumpKeys格式，构建搜索链接
                             first_key = reportData["crasheyeDumpKeys"][0]
