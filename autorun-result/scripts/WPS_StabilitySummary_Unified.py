@@ -166,6 +166,22 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                             appkey = reportData.get("appkey", "uusp2yf6")
                             today_str = target_date.split(" ")[0].replace("-", "-")
                             crasheye_link = f"https://crasheye2.testplus.cn/project/{projectId}/vk/{appkey}/error?startTime={today_str}&endTime={today_str}&searchs={first_key}"
+                        else:
+                            # 检查reportData中是否包含异常关键词，如果有则构建Crasheye搜索链接
+                            abnormal_keywords = ["疑似闪退", "疑似卡死", "crasheye宕机", "socket崩溃"]
+                            has_abnormal = False
+                            for report_key in reportData.keys():
+                                for keyword in abnormal_keywords:
+                                    if keyword in report_key:
+                                        has_abnormal = True
+                                        break
+                                if has_abnormal:
+                                    break
+                            if has_abnormal:
+                                # 构建当天的Crasheye搜索页面，使用默认appkey
+                                appkey = reportData.get("appkey", "uusp2yf6")
+                                today_str = target_date.split(" ")[0].replace("-", "-")
+                                crasheye_link = f"https://crasheye2.testplus.cn/project/{projectId}/vk/{appkey}/error?startTime={today_str}&endTime={today_str}"
 
                         system_log_link = ""
                         game_log_link = ""
@@ -189,17 +205,36 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
                             version_run_enough_device += 1
 
                         is_abnormal = False
+                        crash_type_name = ""
 
                         if crasheye_link:
                             is_abnormal = True
 
-                        # 检查是否包含"疑似闪退"关键词，满足也判定为异常
+                        # 检查是否包含异常关键词，满足也判定为异常
+                        # 异常关键词包括：疑似闪退、疑似卡死、crasheye宕机
+                        abnormal_keywords = ["疑似闪退", "疑似卡死", "crasheye宕机", "socket崩溃"]
+                        # 检查reportData的key名称（异常类型作为key存储，优先级最高）
+                        for report_key in reportData.keys():
+                            for keyword in abnormal_keywords:
+                                if keyword in report_key:
+                                    is_abnormal = True
+                                    if not crash_type_name:
+                                        crash_type_name = keyword
                         # 检查case名称
-                        if "疑似闪退" in caseDetail.get("caseName", ""):
-                            is_abnormal = True
+                        if not crash_type_name:
+                            case_name = caseDetail.get("caseName", "")
+                            for keyword in abnormal_keywords:
+                                if keyword in case_name:
+                                    is_abnormal = True
+                                    crash_type_name = keyword
+                                    break
                         # 检查设备名称
-                        if "疑似闪退" in deviceName:
-                            is_abnormal = True
+                        if not crash_type_name:
+                            for keyword in abnormal_keywords:
+                                if keyword in deviceName:
+                                    is_abnormal = True
+                                    crash_type_name = keyword
+                                    break
 
                         if is_abnormal:
                             device_info = f"    - {deviceName}"
@@ -209,7 +244,8 @@ def get_task_msg(taskIdDict: dict, Regulation_hours: int, projectId: str):
 
                             link_parts = []
                             if crasheye_link:
-                                link_parts.append(f"[Crasheye]({crasheye_link})")
+                                link_text = crash_type_name if crash_type_name else "Crasheye"
+                                link_parts.append(f"[{link_text}]({crasheye_link})")
                             if system_log_link:
                                 link_parts.append(f"[系统日志]({system_log_link})")
                             if game_log_link:
