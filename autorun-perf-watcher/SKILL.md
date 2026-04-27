@@ -1,48 +1,27 @@
 ---
 name: autorun-perf-watcher
-version: 1.0.0
+version: 2.0.0
 description: |
-  监控自动化任务的性能运行情况，统计当天流水线执行状态、失败设备、性能异常等。
-  支持对比近一周的性能基线（FPS TP90、内存峰值、Jank），自动检测性能回归问题。
-
-  使用场景:
-  - 当天流水线执行情况监控
-  - 性能数据对比分析（当天 vs 近一周基线）
-  - 异常设备汇总
-  - 性能回归检测
-
-  核心功能:
-  1. 统计当天流水线成功/失败案例
-  2. 汇总失败设备列表
-  3. 提取性能数据（FPS TP90、内存峰值、Jank）
-  4. 对比近一周性能基线，检测异常
-
-  触发词：星砂 性能监控，星砂 流水线执行情况，星砂 性能异常检测
-
-allowed-tools: Bash, Read, Write, Exec
+  星砂岛物语自动化性能监控系统 - 监控流水线执行状态与性能数据
+  实时查询任务执行情况、性能指标（FPS TP90、内存峰值、Jank）
+  自动对比昨日基线数据，检测性能异常并生成 HTML 格式报告
+  
+  触发词：星砂 性能情况、星砂 性能详情、星砂 今日性能情况
+  
+allowed-tools: Bash, Read, Write, WebFetch
 ---
 
-# Skill: 自动化任务性能监控 (Automation Performance Watcher)
+# Skill: 星砂岛物语自动化性能监控 (Starsand Island Performance Watcher)
 
 ## Description
-本 Skill 用于监控自动化平台上特定流水线的性能运行情况，包括执行状态统计、失败设备汇总、性能数据趋势分析和异常检测。
 
-## Capabilities
-- 实时查询流水线的执行状态（Success, Failed, Running）
-- 统计每个流水线的成功率和失败率
-- 汇总失败设备列表，按失败原因分类
-- 获取近一周的性能数据（FPS、内存、Jank）
-- 自动检测性能异常和回归问题
-- 生成可视化的性能趋势报告
+本 Skill 用于监控星砂岛物语项目在自动化平台上的性能执行情况，包括：
+- 实时查询流水线执行状态（成功/失败/运行中）
+- 获取性能数据：FPS TP90、内存峰值、Jank
+- 对比昨日基线数据，检测性能异常
+- 生成带颜色标注的 HTML 格式报告
 
-## Prerequisites
-- 需要拥有自动化平台的 API Token
-- OpenClaw 环境需能访问平台后端接口（https://uauto2.testplus.cn）
-- Python 环境已配置并安装必要依赖
-
-## 项目配置
-
-### 星砂岛物语 (starsandisland)
+**项目配置**：
 - **项目 ID**: `starsandisland`
 - **监控流水线 ID**: `932, 1103, 1084, 1090`
 - **流水线说明**:
@@ -51,155 +30,421 @@ allowed-tools: Bash, Read, Write, Exec
   - `1084`: PS5 性能测试
   - `1090`: NS2 性能测试
 
+**数据来源**：
+- 平台后端接口：`https://uauto2.testplus.cn`
+- API 端点：
+  - `/api/build/list?pipelineId={id}&pageSize=50` - 获取任务列表
+  - `/api/task/detail/{taskId}` - 获取任务详情
+  - `/api/performance/query` - 获取性能数据
+
+## Constraints
+
+**严格执行以下约束，违反任何一条视为失败**：
+
+1. **禁止开场白**：不要输出"好的"、"这是为您生成的报告"、"让我为您查询"等任何废话，直接输出报告内容。
+2. **禁止自由发挥**：严格按照 [Output Template] 提供的 HTML 结构输出，禁止修改任何 style 属性、表格结构或布局。
+3. **结构固定**：必须包含且仅包含两个部分：「一、执行情况概览」和「二、性能数据对比」。
+4. **数据对齐**：若数据缺失（未完成、未产出），统一填入 "-"，严禁编造数据。
+5. **零随机性**：严格基于 API 返回的真实数据填充，严禁猜测、估算或使用示例数据。
+6. **颜色逻辑**：必须严格遵守以下颜色规则：
+   - 成功/Pass：绿色 `#28a745`
+   - 失败/Fail：红色 `#dc3545`
+   - FPS TP90 >= 60：绿色，< 60：红色
+   - 内存峰值 <= 2048MB：绿色，> 2048MB：红色
+   - Jank <= 10：绿色，> 10：红色
+   - 性能衰退（当前值 < 基线值 * 0.9）：红色
+7. **基线对比**：必须获取昨日（T-1）的性能数据作为基线，计算变化百分比。
+8. **HTML 输出**：最终输出必须是纯 HTML 代码，不要用 Markdown 代码块包裹。
+
 ## Instructions
 
-### 1. 查询流水线执行情况
-当用户请求查看流水线执行情况时：
-1. 调用 `GET /api/build/list?pipelineId={id}&pageSize=50` 获取最近的执行记录
-2. 统计成功（SUCCESS）和失败（FAILED）的任务数量
-3. 计算成功率：`成功率 = 成功数 / 总数 × 100%`
-4. 按流水线分组展示统计结果
+### 步骤 1：查询今日任务执行情况
 
-### 2. 汇总失败设备
-当需要分析失败设备时：
-1. 筛选出状态为 FAILED 的任务
-2. 调用 `GET /api/task/detail/{taskId}` 获取每个失败任务的设备列表
-3. 提取状态为 `error` 或 `failed` 的设备信息
-4. 按失败原因分类汇总（崩溃、超时、环境异常等）
-5. 生成失败设备清单，包含设备 ID、失败原因、失败时间
+对于每个流水线 ID（932, 1103, 1084, 1090），执行以下操作：
 
-### 3. 获取性能数据
-当需要查询性能数据时：
-1. 调用 `GET /api/performance/query` 获取近 7 天的性能数据
-2. 参数设置：
-   - `pipelineIds`: `932,1103,1084,1090`
-   - `startDate`: 当前日期 - 7 天
-   - `endDate`: 当前日期
-   - `metrics`: `fps,memory,jank`
-3. 按日期和流水线分组整理数据
-4. 计算每个指标的平均值、最大值、最小值
+1. 调用 API：`GET /api/build/list?pipelineId={id}&pageSize=50&date={today}`
+2. 统计以下数据：
+   - 任务总数（Total Tasks）
+   - 成功任务数（Success）
+   - 失败任务数（Failed）
+   - 运行中任务数（Running）
+   - 案例总数（Total Cases）
+   - 案例成功数（Cases Success）
+   - 案例失败数（Cases Failed）
+   - 设备总数（Total Devices）
+   - 设备成功数（Devices Success）
+   - 设备失败数（Devices Failed）
+   - 最新任务 ID 和链接
 
-### 4. 性能异常检测
-当需要检测性能异常时：
-1. 获取近 7 天的性能数据作为基线
-2. 对比最新一次执行的性能数据
-3. 异常判断规则：
-   - **FPS 异常**: 平均 FPS 下降 > 10% 或低于 30 FPS
-   - **内存异常**: 内存使用增长 > 20% 或超过 4GB
-   - **Jank 异常**: Jank 次数增加 > 30% 或超过 100 次/分钟
-4. 生成异常报告，标注异常类型和严重程度
+3. 获取任务状态：
+   - `SUCCESS` - 成功
+   - `FAILED` - 失败
+   - `RUNNING` - 运行中
+   - `PENDING` - 等待中
 
-## Tool Definitions (Python/API)
+### 步骤 2：获取性能数据
 
-### get_pipeline_stats
-- **Input**: `pipeline_ids` (list), `days` (int, default=7)
-- **Output**: JSON 格式的流水线统计信息
-- **Description**: 获取指定流水线在指定天数内的执行统计
+对于每个已完成的任务：
 
-### get_failed_devices
-- **Input**: `pipeline_ids` (list), `start_date` (string), `end_date` (string)
-- **Output**: 失败设备列表，包含设备 ID、失败原因、任务链接
-- **Description**: 汇总指定时间范围内的失败设备信息
+1. 调用 API：`GET /api/task/detail/{taskId}`
+2. 提取性能指标：
+   - **FPS TP90**：帧率 90 分位数
+   - **内存峰值**：最大内存使用量（MB）
+   - **Jank**：卡顿次数（次/10分钟）
 
-### get_performance_data
-- **Input**: `pipeline_ids` (list), `metrics` (list), `days` (int)
-- **Output**: 性能数据时间序列，包含 FPS、内存、Jank 等指标
-- **Description**: 获取指定流水线的性能数据
+3. 数据处理规则：
+   - 若任务未完成：填入 "-"
+   - 若性能数据未产出：填入 "-"
+   - 若数据为 0 或 null：填入 "-"
+   - 保留小数点后 1 位
 
-### detect_performance_anomaly
-- **Input**: `pipeline_id` (string), `baseline_days` (int, default=7)
-- **Output**: 异常检测结果，包含异常类型、严重程度、对比数据
-- **Description**: 检测性能异常和回归问题
+### 步骤 3：获取昨日基线数据
 
-## User Conversation Examples
-- "帮我看看星砂的流水线执行情况"
-- "星砂 性能监控"
-- "星砂 近一周性能情况"
-- "星砂 流水线 932、1103、1084、1090 的成功率是多少？"
-- "汇总一下星砂最近失败的设备"
-- "星砂 性能异常检测"
-- "检查星砂是否有性能回归"
+1. 调用 API：`GET /api/build/list?pipelineId={id}&pageSize=50&date={yesterday}`
+2. 获取昨日同一流水线的性能数据作为基线
+3. 计算变化百分比：`((当前值 - 基线值) / 基线值) * 100`
+4. 判断性能衰退：
+   - FPS TP90 下降 > 10%：标红
+   - 内存峰值增长 > 20%：标红
+   - Jank 增长 > 50%：标红
 
-## 聊天触发与自动化执行
+### 步骤 4：生成 HTML 报告
 
-当用户在聊天中输入以下短语之一时，执行对应的监控脚本：
+严格按照 [Output Template] 填充数据，应用颜色逻辑。
 
-| 触发短语 | 执行命令 | 输出文件 |
-|----------|----------|----------|
-| `星砂 性能监控` | `python scripts/perf_watcher.py --project starsandisland --pipelines "932,1103,1084,1090" --output perf_report.md` | `perf_report.md` |
-| `星砂 流水线执行情况` | `python scripts/perf_watcher.py --project starsandisland --pipelines "932,1103,1084,1090" --mode stats --output pipeline_stats.md` | `pipeline_stats.md` |
-| `星砂 性能异常检测` | `python scripts/perf_watcher.py --project starsandisland --pipelines "932,1103,1084,1090" --mode anomaly --output anomaly_report.md` | `anomaly_report.md` |
-| `星砂 近一周性能情况` | `python scripts/perf_watcher.py --project starsandisland --pipelines "932,1103,1084,1090" --days 7 --output weekly_perf.md` | `weekly_perf.md` |
+## Output Template
 
-### 命令参数说明
-- `--project`: 项目 ID (starsandisland)
-- `--pipelines`: 流水线 ID 列表，用逗号分隔
-- `--mode`: 执行模式
-  - `stats`: 统计执行情况（默认）
-  - `anomaly`: 性能异常检测
-  - `full`: 完整报告（包含统计 + 性能 + 异常）
-- `--days`: 查询天数，默认 7 天
-- `--output`: 输出文件名
-- `--date`: (可选) 指定结束日期，格式 YYYY-MM-DD，默认为当天
-
-## 报告模板
-
-### 流水线执行情况报告
-
-```markdown
-# 星砂岛物语 - 流水线执行情况报告
-
-**统计时间**: {target_date}
-
-## 一、执行概览
-
-| 流水线 ID | 流水线名称 | Case 总数 | Case 成功 | Case 失败 | 设备总数 | 设备成功 | 设备失败 | 最新任务 |
-|-----------|-----------|----------|----------|----------|---------|---------|---------|----------|
-| 932 | PC 性能测试 | **12** | **11** | **1** | **120** | **118** | **2** | [查看](链接) |
-| 1084 | PS5 性能测试 | **11** | **2** | **9** | **44** | **31** | **13** | [查看](链接) |
-| 1090 | NS2 性能测试 | **33** | **1** | **32** | **66** | **10** | **56** | [查看](链接) |
-| 1103 | Xbox 性能测试 | **11** | **7** | **4** | **33** | **23** | **10** | [查看](链接) |
-
-**总计**:
-- 任务层级：共 **6** 次，成功 **0** 次，失败 **1** 次，运行中 **4** 次
-- Case层级：共 **67** 个，成功 **21** 个，失败 **46** 个
-- 设备层级：共 **263** 台，成功 **182** 台，失败 **81** 台
-
-## 二、性能数据对比
-
-### PC 性能测试 (932)
-
-| 测试场景 | FPS TP90/基线 | 内存峰值（MB）/基线 | Jank（/10min）/基线 |
-|----------|---------------|---------------------|--------------------|
-| 主城跑图(TDR) | 81.0 / 92.7 (↓12.7%) ⚠️ | 9124.8 / 9062.5 (↑0.7%)  | 3.9 / 6.7 (↓42.1%)  |
-| 新手流程-制造师师初见剧情(TDR) | 106.5 / 92.7 (↑14.9%)  | 8728.4 / 9062.5 (↓3.7%)  | 18.1 / 6.7 (↑172.7%) ⚠️ |
-
-### 性能异常检测
-
-⚠️ **检测到 3 个性能异常**：
-
-- **设备名称** - 新手流程-制造师师初见剧情(TDR)
-  - Jank 增加 172.7% (当前: 18.1, 基线: 6.7)
-  - [查看 Perfeye](链接)
-
-✅ **其他平台性能正常**
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星砂岛物语 - 性能监控报告</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .date {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .status-failed {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .status-running {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        .perf-good {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: 600;
+        }
+        .perf-bad {
+            background-color: #f8d7da;
+            color: #721c24;
+            font-weight: 600;
+        }
+        .baseline {
+            background-color: #e7f3ff;
+            font-weight: 600;
+        }
+        .link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .summary-item {
+            display: inline-block;
+            margin-right: 30px;
+            font-size: 14px;
+        }
+        .summary-item strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 星砂岛物语 - 性能监控报告</h1>
+            <div class="date">统计时间：{{report_date}}</div>
+        </div>
+        
+        <div class="content">
+            <!-- 第一部分：执行情况概览 -->
+            <div class="section">
+                <div class="section-title">一、执行情况概览</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>流水线 ID</th>
+                            <th>流水线名称</th>
+                            <th>任务状态</th>
+                            <th>案例总数</th>
+                            <th>案例成功</th>
+                            <th>案例失败</th>
+                            <th>设备总数</th>
+                            <th>设备成功</th>
+                            <th>设备失败</th>
+                            <th>最新任务</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each pipelines}}
+                        <tr>
+                            <td><strong>{{pipeline_id}}</strong></td>
+                            <td>{{pipeline_name}}</td>
+                            <td class="{{status_class}}">{{task_status}}</td>
+                            <td>{{total_cases}}</td>
+                            <td class="status-success">{{cases_success}}</td>
+                            <td class="status-failed">{{cases_failed}}</td>
+                            <td>{{total_devices}}</td>
+                            <td class="status-success">{{devices_success}}</td>
+                            <td class="status-failed">{{devices_failed}}</td>
+                            <td><a href="{{task_link}}" class="link" target="_blank">查看详情</a></td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+                
+                <div class="summary">
+                    <div class="summary-item"><strong>任务总数：</strong>{{total_tasks}}</div>
+                    <div class="summary-item"><strong>成功：</strong><span class="status-success">{{tasks_success}}</span></div>
+                    <div class="summary-item"><strong>失败：</strong><span class="status-failed">{{tasks_failed}}</span></div>
+                    <div class="summary-item"><strong>运行中：</strong><span class="status-running">{{tasks_running}}</span></div>
+                </div>
+            </div>
+            
+            <!-- 第二部分：性能数据对比 -->
+            <div class="section">
+                <div class="section-title">二、性能数据对比（今日 vs 昨日基线）</div>
+                
+                {{#each pipelines}}
+                <h3 style="color: #667eea; margin-top: 30px;">{{pipeline_name}} ({{pipeline_id}})</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">测试场景</th>
+                            <th colspan="2">FPS TP90</th>
+                            <th colspan="2">内存峰值 (MB)</th>
+                            <th colspan="2">Jank (次/10min)</th>
+                            <th rowspan="2">Perfeye</th>
+                        </tr>
+                        <tr>
+                            <th>当前值</th>
+                            <th>变化</th>
+                            <th>当前值</th>
+                            <th>变化</th>
+                            <th>当前值</th>
+                            <th>变化</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline">
+                            <td><strong>昨日基线</strong></td>
+                            <td>{{baseline_fps}}</td>
+                            <td>-</td>
+                            <td>{{baseline_memory}}</td>
+                            <td>-</td>
+                            <td>{{baseline_jank}}</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        {{#each test_cases}}
+                        <tr>
+                            <td>{{case_name}}</td>
+                            <td class="{{fps_class}}">{{fps_value}}</td>
+                            <td class="{{fps_change_class}}">{{fps_change}}</td>
+                            <td class="{{memory_class}}">{{memory_value}}</td>
+                            <td class="{{memory_change_class}}">{{memory_change}}</td>
+                            <td class="{{jank_class}}">{{jank_value}}</td>
+                            <td class="{{jank_change_class}}">{{jank_change}}</td>
+                            <td><a href="{{perfeye_link}}" class="link" target="_blank">查看</a></td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 ```
 
-## Agent 工作流程
+## 占位符说明
 
-当检测到触发短语时，根据触发短语映射表执行对应的监控脚本：
+### 全局占位符
+- `{{report_date}}` - 报告生成日期，格式：YYYY-MM-DD HH:mm:ss
 
-执行步骤：
+### 执行情况概览占位符
+- `{{pipeline_id}}` - 流水线 ID（932/1103/1084/1090）
+- `{{pipeline_name}}` - 流水线名称（PC 性能测试/Xbox 性能测试/PS5 性能测试/NS2 性能测试）
+- `{{task_status}}` - 任务状态（成功/失败/运行中）
+- `{{status_class}}` - 状态样式类（status-success/status-failed/status-running）
+- `{{total_cases}}` - 案例总数
+- `{{cases_success}}` - 案例成功数
+- `{{cases_failed}}` - 案例失败数
+- `{{total_devices}}` - 设备总数
+- `{{devices_success}}` - 设备成功数
+- `{{devices_failed}}` - 设备失败数
+- `{{task_link}}` - 任务详情链接
+- `{{total_tasks}}` - 任务总数
+- `{{tasks_success}}` - 成功任务数
+- `{{tasks_failed}}` - 失败任务数
+- `{{tasks_running}}` - 运行中任务数
 
-1. **识别触发词**: 匹配用户输入与触发短语表
-2. **运行脚本**: 在工作区根目录执行对应命令
-3. **读取输出**: 读取生成的输出文件内容
-4. **格式化输出**: 将报告内容以 Markdown 格式返回给用户（不使用代码块）
-5. **异常处理**: 如果脚本执行失败，返回错误信息并建议检查环境
+### 性能数据对比占位符
+- `{{baseline_fps}}` - 昨日基线 FPS TP90
+- `{{baseline_memory}}` - 昨日基线内存峰值
+- `{{baseline_jank}}` - 昨日基线 Jank
+- `{{case_name}}` - 测试场景名称
+- `{{fps_value}}` - 当前 FPS TP90 值
+- `{{fps_change}}` - FPS 变化百分比（+X% / -X%）
+- `{{fps_class}}` - FPS 样式类（perf-good/perf-bad）
+- `{{fps_change_class}}` - FPS 变化样式类
+- `{{memory_value}}` - 当前内存峰值
+- `{{memory_change}}` - 内存变化百分比
+- `{{memory_class}}` - 内存样式类
+- `{{memory_change_class}}` - 内存变化样式类
+- `{{jank_value}}` - 当前 Jank 值
+- `{{jank_change}}` - Jank 变化百分比
+- `{{jank_class}}` - Jank 样式类
+- `{{jank_change_class}}` - Jank 变化样式类
+- `{{perfeye_link}}` - Perfeye 详情链接
 
-### 注意事项
-- 报告必须直接以 Markdown 格式输出，不能使用 ``` 代码块包裹
-- 保留所有超链接的可点击性
-- 数字和关键指标需要加粗显示
-- 性能趋势使用箭头符号（↑ ↓ →）表示变化方向
-- 异常检测结果需要明确标注严重程度
+## 颜色逻辑规则
+
+### 执行状态颜色
+- 成功（SUCCESS）：`status-success` → 绿色 #28a745
+- 失败（FAILED）：`status-failed` → 红色 #dc3545
+- 运行中（RUNNING）：`status-running` → 黄色 #ffc107
+
+### 性能指标颜色
+- **FPS TP90**：
+  - >= 60：`perf-good` → 绿色背景
+  - < 60：`perf-bad` → 红色背景
+  
+- **内存峰值**：
+  - <= 2048MB：`perf-good` → 绿色背景
+  - > 2048MB：`perf-bad` → 红色背景
+  
+- **Jank**：
+  - <= 10：`perf-good` → 绿色背景
+  - > 10：`perf-bad` → 红色背景
+
+### 变化趋势颜色
+- FPS TP90 下降 > 10%：`perf-bad` → 红色背景
+- 内存峰值增长 > 20%：`perf-bad` → 红色背景
+- Jank 增长 > 50%：`perf-bad` → 红色背景
+- 其他情况：`perf-good` → 绿色背景
+
+## 触发词
+
+用户输入以下任一短语时，立即执行本 Skill：
+
+- `星砂 性能情况`
+- `星砂 性能详情`
+- `星砂 性能状况`
+- `星砂 今日性能情况`
+- `星砂 今日性能详情`
+- `星砂 今日性能状况`
+
+## 执行流程
+
+1. **识别触发词** → 匹配用户输入
+2. **查询今日数据** → 调用 API 获取今日任务执行情况和性能数据
+3. **查询昨日基线** → 调用 API 获取昨日性能数据作为基线
+4. **数据处理** → 计算变化百分比，应用颜色逻辑
+5. **生成报告** → 填充 HTML 模板，输出纯 HTML 代码
+6. **直接输出** → 不要任何开场白，直接输出 HTML 报告
+
+## 错误处理
+
+- API 调用失败：在对应位置填入 "-"，并在报告底部添加错误提示
+- 数据缺失：统一填入 "-"
+- 昨日基线不存在：在基线行填入 "-"，变化百分比填入 "N/A"
+
+## 注意事项
+
+1. **严格遵守 Constraints**：任何违反约束的行为都是不可接受的
+2. **数据真实性**：严禁编造数据，所有数据必须来自 API
+3. **HTML 纯净输出**：不要用 Markdown 代码块包裹 HTML
+4. **颜色逻辑准确**：必须严格按照规则应用颜色
+5. **链接可点击**：确保所有链接格式正确，可以直接点击跳转

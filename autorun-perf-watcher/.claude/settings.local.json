@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/perf_watcher.py --project starsandisland --pipelines \"932,1103,1084,1090\" --format html --output perf_report.html)",
+      "Bash(python scripts/perf_watcher.py --project starsandisland --pipelines 932,1103,1084,1090 --mode full --format html --output perf_report.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
